@@ -1,0 +1,77 @@
+version: "2.1"
+services:
+  jobmanager:
+    image: flink
+    container_name: flinkjob
+    expose:
+      - "6123"
+    ports:
+      - "48085:8081"
+    command: jobmanager
+    depends_on:
+      - zookeeper
+      - hadoop
+      - kafka
+    links:
+      - "zookeeper"
+      - "hadoop"
+      - "kafka"
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+  taskmanager:
+    image: flink
+    container_name: flinktask
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+      - zookeeper
+      - hadoop
+    command: taskmanager
+    links:
+      - "jobmanager"
+      - "zookeeper"
+      - "hadoop"
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zk
+    restart: unless-stopped
+    hostname: zoo
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kfk
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: zookeeper
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CREATE_TOPICS: "test:1:1"
+    depends_on:
+      - zookeeper
+  hadoop:
+    image: sequenceiq/hadoop-docker:2.7.1
+    container_name: hdfs
+    ports:
+      - "50070:50070"
+      - "8088:8088"
+      - "9000:9000"
+      - "8020:8020"
+    expose:
+      - "8020"
+      - "8042"
+      - "8088"
+      - "9000"
+      - "10020"
+      - "19888"
+      - "50010"
+      - "50020"
+      - "50070"
+      - "50075"
+      - "50090"

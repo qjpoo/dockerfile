@@ -1,0 +1,12 @@
+FROM alpine:latest
+MAINTAINER Darebeat <fengwei2010@126.com>
+
+ADD ./src /
+WORKDIR /opt
+
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories; \
+    apk add --update mysql mysql-client; \
+    rm -f /var/cache/apk/*
+
+EXPOSE 3306
+CMD ["/startup.sh"]
